@@ -1,12 +1,13 @@
-#As of June 2017
+##### As of June 2017
 This project is under construction! It is a work in progress. If you would like more information, contact me directly at sarah.hu@usc.edu
 Also, please feel free to contact me with suggestions or feedback on this pending repo
-#V4 tag sequence QC automation
+
+##### V4 tag sequence QC automation
 Protocol describes quality checking process for raw fastq sequences. Includes some discussion for alternate approaches. End product is ready for OTU clustering.
 
 I've also included suggestions for OTU clustering at the end (specific for 18S data).
 
-##Getting started
+### Getting started
 Step by step instructions below. Included perl script here automates the entire process. Directions on automating are included here (protocols.io) link. For first timers, we suggest going through all steps below with one set of fastq samples (e.g. R1 and R2s) to familiarize yourself with process. 
 
 This protocol (and my preferred method) is to perform as much quality checking on each individual sample before combining for downstream OTU clustering (or other analysis). This way, I can track any samples that may be not ideal for downstream analysis.
@@ -16,7 +17,7 @@ To follow along with below step by step instructions:
 - Download other scripts: create.map.pl, seqlength_cutoff.pl
 - Download PR2 database from here < need to figure out how to get pr2 db
 
-###Prerequisites
+### Prerequisites
 Programs required:
 
 QIIME - I'm using v.1.9.1
@@ -31,7 +32,7 @@ To know about your specific samples:
 - Forward and reverse primer sequences, I'm using V4 Stoeck et al. 2010 primers 
 - Preferred reference database, here, I'm using the PR2 reference database
 
-##Step 1 - Create map file
+## Step 1 - Create map file
 Map files in QIIME serve to de-multiplex reads (based on barcodes and indices) and are used in 'split_library' QIIME step. Here, I've split up the V4 forward primer to fulfill the necessary barcode / index space required in the QIIME mapping file. However, we aren't using this feature of the mapping file. 
  
 Use this QIIME command to check mapping file:
@@ -45,7 +46,7 @@ This reads the prefix.txt file to create map files specific to the test fastq fi
 Following steps only refer to "Test01" sample.
 
 
-##Step 2 - Merge paired end (R1 and R2) reads with a 20 bp overlap
+## Step 2 - Merge paired end (R1 and R2) reads with a 20 bp overlap
 
 ```
 join_paired_ends.py -f Test01_L001_R1_001.fastq -r Test01_L001_R2_001.fastq -o joined_Test01 -j 20
@@ -53,7 +54,7 @@ join_paired_ends.py -f Test01_L001_R1_001.fastq -r Test01_L001_R2_001.fastq -o j
 mv joined_Test01/fastqjoin.join.fastq Test01_merged.fastq
 ```
 
-##Step 3 - Initial Q score filter
+## Step 3 - Initial Q score filter
 Perform split library command in QIIME, filter sequences with Q score 30
 
 ```
@@ -61,7 +62,7 @@ split_libraries_fastq.py -i Test01_merged.fastq -m Test01_map.txt --barcode_type
 mv split_Test01/seqs.fna Test01.merged.Q30.fasta
 ```
 
-##Step 4 - Remove primers
+## Step 4 - Remove primers
 
 Clip V4 primers. Allows sequences to have either forward or reverse primers 
 Note I am using Stoeck et al. 2010 V4 primers specifically for microbial eukaryotes
@@ -81,14 +82,14 @@ cutadapt -a TYRATCAAGAACGAAAGT -O 3 --discard-untrimmed -m 10 -o Test01.assemble
 cat Test01.assembled.clipped.regF.fasta Test01.assembled.clipped.regR.fasta >> Test01.assembled.clipped.fasta
 ```
 
-###Step 5 - Clean up directory
+## Step 5 - Clean up directory
 Move excess files to 'split' directories which were created during the split library step
 ```
 mv Test01*reg* split_Test01/
 mv Test01.filter.log split_Test01/
 ```
 
-###Step 6 - Length filter
+## Step 6 - Length filter
 Here remove sequences shorter than 150 bp and longer than 500 bps, and rename.
 Usage: 
 seqlength_cutoff.pl input.fasta min max output.fasta
@@ -98,7 +99,7 @@ seqlength_cutoff.pl Test01.assembled.clipped.fasta 150 500 Test01.assembled.clip
 ```
 
 
-###Step 7 - Chimera check 
+## Step 7 - Chimera check 
 Remove chimeras using vsearch (uchime) and the PR2 database
 Get vsearch here: https://github.com/torognes/vsearch
 You will need to acquire reference database that is best for your sample type. I am using the PR2 database. Alternatively, you can change the command to run vsearch chimera checking de novo. This will take longer.
@@ -112,7 +113,7 @@ mv Test01.uchimeinfo_ref split_Test01/
 
 ```
 
-###Step 8
+## Step 8
 
 Combine all reads together. Next run through will add the next set of sequences.
  
