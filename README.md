@@ -39,7 +39,7 @@ Use this QIIME command to check mapping file:
 http://qiime.org/1.6.0/scripts/check_id_map.html
 
 ```
-perl create.pl
+./create.map.pl
 ```
 This reads the prefix.txt file to create map files specific to the test fastq files for this example.
 
@@ -95,7 +95,7 @@ Usage:
 seqlength_cutoff.pl input.fasta min max output.fasta
 
 ```
-seqlength_cutoff.pl Test01.assembled.clipped.fasta 150 500 Test01.assembled.clipped.len.fasta
+./seqlength_cutoff.pl Test01.assembled.clipped.fasta 150 500 Test01.assembled.clipped.len.fasta
 ```
 
 
