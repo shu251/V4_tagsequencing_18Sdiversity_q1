@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#!/usr/bin/perl -w
 open INFILE, "prefix.txt";
 @prefix = ();
 while (<INFILE>)
