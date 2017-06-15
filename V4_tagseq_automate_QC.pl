@@ -6,8 +6,14 @@ while (<INFILE>)
   push(@prefix, $_);
 }
 close INFILE;
-#(1) Import prefix file, named "prefix.txt" and starting loop
 
+
+#Perl script to automate V4 tag sequence QC process
+#last updated 06-13-2017, Sarah K. Hu
+
+
+
+#(1) Import prefix file, named "prefix.txt" and starting loop
 for $i(@prefix)
 {
 #(2) Merge paired end (R1 and R2) reads with a 20 bp overlap
