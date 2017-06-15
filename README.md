@@ -1,7 +1,8 @@
 ##### As of June 2017
 This project is under construction! It is a work in progress. If you would like more information, contact me directly at sarah.hu@usc.edu
 Also, please feel free to contact me with suggestions or feedback on this pending repo
-#V4 tag sequence QC automation
+
+##### V4 tag sequence QC automation
 Protocol describes quality checking process for raw fastq sequences. Includes some discussion for alternate approaches. End product is ready for OTU clustering.
 
 I've also included suggestions for OTU clustering at the end (specific for 18S data).
