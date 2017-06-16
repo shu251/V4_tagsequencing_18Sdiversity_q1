@@ -32,6 +32,18 @@ To know about your specific samples:
 - Forward and reverse primer sequences, I'm using V4 Stoeck et al. 2010 primers 
 - Preferred reference database, here, I'm using the PR2 reference database
 
+## Automating each step
+
+Before automating this protocol for your samples, go through the test data starting at Step 1 below. 
+
+To automate run, first make sure the prefix.txt file has been made for your samples. See example.
+Run the perl script V4_tagseq_automate_QC.pl
+```
+perl V4_tagseq_automate_QC.pl > run_qc.sh
+```
+Check the output and run!
+
+### Step by step instructions
 ## Step 1 - Create map file
 Map files in QIIME serve to de-multiplex reads (based on barcodes and indices) and are used in 'split_library' QIIME step. Here, I've split up the V4 forward primer to fulfill the necessary barcode / index space required in the QIIME mapping file. However, we aren't using this feature of the mapping file. 
  
@@ -120,6 +132,63 @@ Combine all reads together. Next run through will add the next set of sequences.
 ```
 cat Test01.assembled.clipped.len.nc.final.fasta >> allseqs_test.fasta
 ```
+
+## Step 9 (optional)
+If you have installed abyss or have another way to get quick stats on fasta files, use it here!
+It is important to track how many sequences were lost during the QC process. Run this bit of code to obtain separate .txt files for each step.
+```
+abyss-fac -v *_merged.fastq >>stats_merged.txt
+abyss-fac -v *.merged.Q30.fasta >> stats_Q30.txt
+abyss-fac -v *.assembled.clipped.fasta >> stats_primerclipped.txt
+abyss-fac -v *.assembled.clipped.len.fasta >> stats_length_cutoff.txt
+abyss-fac -v *.assembled.clipped.len.nc.final.fasta >> stats_chimeras.txt
+```
+Text file outputs from this can then be compiled using an R script to generate a QC stats file.
+```
+#Start R
+stats<-c("stats_merged.txt", "stats_Q30.txt", "stats_primerclipped.txt", "stats_length_cutoff.txt", "stats_chimeras.txt")
+
+for (file in stats){
+  if (!exists("dataset")){
+    dataset<-read.delim(file, header=TRUE, sep="\t",row.names=NULL)
+    dataset<-dataset[c(2,4,8,10)]
+    colnames(dataset)[1:4]<-c(file,"Min (bp)", "Max (bp)", "File name")
+  }
+  if (exists("dataset")){
+    tmpdata<-read.delim(file, header=TRUE, sep="\t",row.names=NULL)
+    tmpdata<-tmpdata[c(2,4,8,10)]
+    colnames(tmpdata)[1:4]<-c(file,"Min (bp)", "Max (bp)", "File name")
+    dataset<-cbind(dataset, tmpdata)
+    rm(tmpdata)
+  }
+}
+head(dataset)
+write.csv(dataset, file="Seq_stats_QC.csv")
+```
+
+### Next steps - OTU clustering
+I've included the test file result "allseqs_test.fasta" here as well.
+
+# Considerations for OTU clustering
+Depending on the questions you want to ask your data, decide about what type of OTU clustering you want to do (both algorithm and percent similarity).
+ 
+QIIME is a great resource for tutorials on OTU clustering - http://qiime.org/tutorials/otu_picking.html#running-the-otu-picking-workflows
+
+In this example I will use open reference OTU picking (Rideout et al. 2014, PeerJ), via QIIME and the PR2 database.
+```
+#OTU clustering with uclust, will make a new directory (pick_open)
+pick_open_reference_otus.py -i allseqs_test.fasta -o pick_open -m uclust -r /galadriel/sarah/PR2/pr2.qiime.fasta --suppress_step4 --suppress_taxonomy_assignment
+cd pick_open
+#assign taxonomy using PR2 database, creates a new directory (uclust_taxonomy)
+assign_taxonomy.py -i rep_set.fna -t /galadriel/sarah/PR2/ids.names.2.txt -r /galadriel/sarah/PR2/pr2.qiime.fasta -m uclust -o uclust_taxonomy
+#make an OTU table, and convert to txt
+make_otu_table.py -i final_otu_map.txt -o V4_tagseq_test.biom -t uclust_taxonomy/rep_set_tax_assignments.txt 
+biom convert -i V4_tagseq_test.biom -o V4_tagseq_test.txt --to-tsv --header-key=taxonomy
+```
+# Use a text editor to remove the comment from the second line
+Keep the "Constructed from biom file" commented out line.
+Look for future repository to generate quick stats and figures from this OTU table.
+
 
 ## Contributing
 With helpful guidance and input from Jay Liu

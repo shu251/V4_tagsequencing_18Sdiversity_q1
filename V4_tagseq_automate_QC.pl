@@ -42,7 +42,7 @@ print "mv ",$i,"*reg* split_",$i,"/\n"; #move excess files from trimming to spli
 print "mv ",$i,".filter.log split_",$i,"/\n";
 
 # (7) Length filter: seqlength_cutoff.pl [input.fasta] [min] [max] [output.fasta] 
-print "seqlength_cutoff.pl ",$i,".assembled.clipped.fasta 150 500 ",$i,".assembled.clipped.len.fasta\n";
+print "./seqlength_cutoff.pl ",$i,".assembled.clipped.fasta 150 500 ",$i,".assembled.clipped.len.fasta\n";
 
 #(8) Chimera check with vsearch (uchime) using a reference database
 print "vsearch --uchime_ref ",$i,".assembled.clipped.len.fasta --db /galadriel/sarah/PR2/pr2.qiime.fasta --uchimeout ",$i,".uchimeinfo_ref --chimeras ",$i,".chimeras_ref.fasta --strand plus --nonchimeras ",$i,".assembled.clipped.len.nc.final.fasta \n";
