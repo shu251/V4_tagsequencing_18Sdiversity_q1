@@ -1,8 +1,8 @@
-##### As of June 2017
+#### As of June 2017
 This project is under construction! It is a work in progress. If you would like more information, contact me directly at sarah.hu@usc.edu
 Also, please feel free to contact me with suggestions or feedback on this pending repo
 
-##### V4 tag sequence QC automation
+## V4 tag sequence QC automation
 Protocol describes quality checking process for raw fastq sequences. Includes some discussion for alternate approaches. End product is ready for OTU clustering.
 
 I've also included suggestions for OTU clustering at the end (specific for 18S data).
@@ -15,7 +15,8 @@ This protocol (and my preferred method) is to perform as much quality checking o
 To follow along with below step by step instructions:
 - Download and unzip test_fastq_files.zip
 - Download other scripts: create.map.pl, seqlength_cutoff.pl
-- Download PR2 database from here < need to figure out how to get pr2 db
+- Download PR2 database from Caron Lab hosted drive: https://drive.google.com/drive/folders/0Bxzw_UrYS4IAaEQ0b0lMQ0ZiUkU?usp=sharing
+
 
 ### Prerequisites
 Programs required:
@@ -27,6 +28,8 @@ Make sure fastqjoin is installed. Alternatively you can use PEAR to merger PE se
 cutadapt - I'm using v.1.10: http://cutadapt.readthedocs.io/en/stable/guide.html
 
 vsearch - v1.11.1: https://github.com/torognes/vsearch
+
+abyss (optional) - see step 9
 
 To know about your specific samples:
 - Forward and reverse primer sequences, I'm using V4 Stoeck et al. 2010 primers 
@@ -185,10 +188,9 @@ assign_taxonomy.py -i rep_set.fna -t /galadriel/sarah/PR2/ids.names.2.txt -r /ga
 make_otu_table.py -i final_otu_map.txt -o V4_tagseq_test.biom -t uclust_taxonomy/rep_set_tax_assignments.txt 
 biom convert -i V4_tagseq_test.biom -o V4_tagseq_test.txt --to-tsv --header-key=taxonomy
 ```
-# Use a text editor to remove the comment from the second line
+### Use a text editor to remove the comment from the second line
 Keep the "Constructed from biom file" commented out line.
-Look for future repository to generate quick stats and figures from this OTU table.
-
+See other repository: "PreliminaryFigures_V4_tagseq" for generating preliminary figures from OTU tables.
 
 ## Contributing
 With helpful guidance and input from Jay Liu
