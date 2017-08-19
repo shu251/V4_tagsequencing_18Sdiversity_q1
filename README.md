@@ -1,11 +1,8 @@
-#### As of June 2017
-This project is under construction! It is a work in progress. If you would like more information, contact me directly at sarah.hu@usc.edu
-Also, please feel free to contact me with suggestions or feedback on this pending repo
+#### Last updated August 19, 2017
+As with any bioinformatic pipeline, with each new dataset I analyze, I evolve this protocol. While I plan to continue updating this repository, feel free to contact me with questions or comments - sarah.hu[at]usc.edu
 
 ## V4 tag sequence QC automation
-Protocol describes quality checking process for raw fastq sequences. Includes some discussion for alternate approaches. End product is ready for OTU clustering.
-
-I've also included suggestions for OTU clustering at the end (specific for 18S data).
+Protocol describes quality checking process for raw fastq sequences. Includes some discussion for alternate approaches. End product is ready for OTU clustering. I've also included suggestions for OTU clustering at the end (specific for 18S data). Much of this pipeline can be applied for any tag sequencing analysis, but keep in mind this was specifically constructed to analyze single-celled microbial eukaryotic communities.
 
 ### Getting started
 Step by step instructions below. Included perl script here automates the entire process. Directions on automating are included here (protocols.io) link. For first timers, we suggest going through all steps below with one set of fastq samples (e.g. R1 and R2s) to familiarize yourself with process. 
@@ -17,15 +14,14 @@ To follow along with below step by step instructions:
 - Download other scripts: create.map.pl, seqlength_cutoff.pl
 - Download PR2 database from Caron Lab hosted drive: https://drive.google.com/drive/folders/0Bxzw_UrYS4IAaEQ0b0lMQ0ZiUkU?usp=sharing
 
-
 ### Prerequisites
 Programs required:
 
-QIIME - I'm using v.1.9.1
+QIIME -  v.1.9.1 or higher
 Install here: http://qiime.org/install/install.html
 Make sure fastqjoin is installed. Alternatively you can use PEAR to merger PE sequences: https://sco.h-its.org/exelixis/web/software/pear/doc.html#installing
 
-cutadapt - I'm using v.1.10: http://cutadapt.readthedocs.io/en/stable/guide.html
+cutadapt - v.1.10: http://cutadapt.readthedocs.io/en/stable/guide.html
 
 vsearch - v1.11.1: https://github.com/torognes/vsearch
 
@@ -38,9 +34,7 @@ To know about your specific samples:
 ## Automating each step
 
 Before automating this protocol for your samples, go through the test data starting at Step 1 below. 
-
-To automate run, first make sure the prefix.txt file has been made for your samples. See example.
-Run the perl script V4_tagseq_automate_QC.pl
+To automate run, first make sure the prefix.txt file has been made for your samples. See more details here: Microbial eukaryotic 18S tag-sequence processing/QC - V4 region (automating) https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-g33byqn
 ```
 perl V4_tagseq_automate_QC.pl > run_qc.sh
 ```
@@ -193,14 +187,10 @@ Keep the "Constructed from biom file" commented out line.
 See other repository: "PreliminaryFigures_V4_tagseq" for generating preliminary figures from OTU tables.
 
 ## Contributing
-With helpful guidance and input from Jay Liu
+With helpful guidance and input from Jay Liu.
 
 ## Citations
 QIIME, Caporaso et al. 2010. Nature Methods; doi:10.1038/nmeth.f.303
 cutadapt, Martin, 2017; DOI:10.14806/ej.17.1.200 
-
-## Version/update notes
-Initial upload 06/2017
-
 
 
