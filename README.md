@@ -5,7 +5,7 @@ As with any bioinformatic pipeline, with each new dataset I analyze, I evolve th
 Protocol describes quality checking process for raw fastq sequences. Includes some discussion for alternate approaches. End product is ready for OTU clustering. I've also included suggestions for OTU clustering at the end (specific for 18S data). Much of this pipeline can be applied for any tag sequencing analysis, but keep in mind this was specifically constructed to analyze single-celled microbial eukaryotic communities.
 
 ### Getting started
-Step by step instructions below. Included perl script here automates the entire process. Directions on automating are included at [protocols.io](dx.doi.org/10.17504/protocols.io.g33byqn). For first timers, we suggest going through all steps below with one set of fastq samples (e.g. R1 and R2s) to familiarize yourself with process. 
+Step by step instructions below. Included perl script here automates the entire process. Directions on automating are included at [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j5acq2e). For first timers, we suggest going through all steps below with one set of fastq samples (e.g. R1 and R2s) to familiarize yourself with process. 
 
 This protocol (and my preferred method) is to perform as much quality checking on each individual sample before combining for downstream OTU clustering (or other analysis). This way, I can track any samples that may be not ideal for downstream analysis.
 
@@ -35,10 +35,7 @@ Following steps only refer to "Test01" sample.
 
 ## Step 1 - Remove primers using Trimmomatic
 
-(4) update citations
-(5) add Hu et al reference
-(6) update with changes...
-(7) modify OTU clustering section with notes from talking with students.
+Removes primers. Imports a file that lists your forward and reverse sequences. See 'trimPE_V4primer.fasta'
 
 * LEADING:10 TRAILING:10 - each base requires minimum quality of Q10 in leading and trailing ends
 * SLIDINGWINDOW:10:30 - In each 10bp sliding window, the average quality required is Q30
@@ -147,6 +144,8 @@ write.csv(dataset, file="Seq_stats_QC.csv")
 ```
 cat Test*_trim_merged_Q30_len_nc.fasta >> allseqs_test.fasta
 ```
+
+See related [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j5acq2e) for directions on automating this process.
 
 ### Next steps - OTU clustering
 I've included the test file result "allseqs_test.fasta" here as well.
