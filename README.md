@@ -5,7 +5,7 @@ As with any bioinformatic pipeline, with each new dataset I analyze, I evolve th
 Protocol describes quality checking process for raw fastq sequences. Includes some discussion for alternate approaches. End product is ready for OTU clustering. I've also included suggestions for OTU clustering at the end (specific for 18S data). Much of this pipeline can be applied for any tag sequencing analysis, but keep in mind this was specifically constructed to analyze single-celled microbial eukaryotic communities.
 
 ### Getting started
-Step by step instructions below. Included perl script here automates the entire process. Directions on automating are included at [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j5acq2e). For first timers, we suggest going through all steps below with one set of fastq samples (e.g. R1 and R2s) to familiarize yourself with process. 
+Step by step instructions below. Included perl script here automates the entire process. Directions on automating are included at [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j9bcr2n). For first timers, we suggest going through all steps below with one set of fastq samples (e.g. R1 and R2s) to familiarize yourself with process. 
 
 This protocol (and my preferred method) is to perform as much quality checking on each individual sample before combining for downstream OTU clustering (or other analysis). This way, I can track any samples that may be not ideal for downstream analysis.
 
@@ -87,7 +87,7 @@ mv Test01*orphan.fastq out_Test01/
 
 ## Step 6 - Repeat for all sequences & get stats (optional)
 
-To repeat, see automation pipeline information at [protocols.io](dx.doi.org/10.17504/protocols.io.g33byqn) and using 'V4_tagseq_automate_QC.pl'
+To repeat, see automation pipeline information at [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j9bcr2n) and using 'V4_tagseq_automate_QC_v2.pl'
 
 To get sequence count information, you can use count_seqs.py in QIIME. I recommend running some kind of statistics on fasta files from each step. This way you can know exactly why a sample "failed" QC. Alternatively, you can see which steps in your pipeline are more strict (remove more sequences) or relaxed (didn't remove a lot of sequences). 
 
@@ -139,13 +139,15 @@ head(dataset)
 write.csv(dataset, file="Seq_stats_QC.csv")
 ```
 
-## Step 7 - Combine all reads together. QIIME map file (during the split library step) introduced sample names (e.g. "Test01") into the fasta file header. So when we combine all of our fasta files together we can still track which sequences belong to which samples.
+## Step 7 - Combine all reads together. 
+
+QIIME map file (during the split library step) introduced sample names (e.g. "Test01") into the fasta file header. So when we combine all of our fasta files together we can still track which sequences belong to which samples.
 
 ```
 cat Test*_trim_merged_Q30_len_nc.fasta >> allseqs_test.fasta
 ```
 
-See related [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j5acq2e) for directions on automating this process.
+See related [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j9bcr2n) for directions on automating this process.
 
 ### Next steps - OTU clustering
 I've included the test file result "allseqs_test.fasta" here as well.
