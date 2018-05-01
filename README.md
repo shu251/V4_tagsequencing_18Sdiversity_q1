@@ -126,7 +126,7 @@ After run is repeated (9a), use the below R script to import all of the .txt fil
 Since chimera checking (step 8) was done for the whole dataset, you'll have to add how many sequence were removed via chimera checking later.
 
 Start R environment
-'''
+```
 # R
 library(reshape2)
 #
@@ -170,7 +170,7 @@ head(qc_info)
 qc_stats<-dcast(qc_info[c(3:4,1)], SampleID~QC_step, value.var = "Sequences")
 # Write to .csv file
 write.csv(qc_stats, file="sequence_qc.csv")
-'''
+```
 
 ## Step 10 - OTU clustering
 
