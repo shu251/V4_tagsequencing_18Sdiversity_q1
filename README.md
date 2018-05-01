@@ -11,6 +11,7 @@ Below protocol describes approach used for 18S tag-sequencing, specifically from
 * [cutadapt](http://cutadapt.readthedocs.io/en/stable/installation.html)
 * [vsearch](https://github.com/torognes/vsearch) - v1.11.1
 * Reference database for downstream OTU clustering & taxonomy assignment. For 18S (microbial eukaryotic) work, I prefer [PR2](https://github.com/vaulot/pr2_database/wiki)
+* R - see optional steps below for using R to generate stats on QC steps.
 
 ## Step 1 - Get started
 To follow step by step instructions below, follow along with test files provided from here: zenodo [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1236641.svg)](https://doi.org/10.5281/zenodo.1236641)
@@ -78,18 +79,11 @@ seqlength_cutoff.pl input.fasta min max output.fasta
 ./seqlength_cutoff.pl Test01_merged_QC_trim.fasta 150 500 Test01_merged_QC_trim_len.fasta
 ```
 
-## Step 6 - Chimera removal
-Remove chimeras using [vsearch](https://github.com/torognes/vsearch) (uchime de novo)
-
-```
-vsearch --uchime_denovo Test01_merged_QC_trim_len.fasta --nonchimeras Test01_merged_QC_trim_len_nc.fasta
-```
-
-## Step 7 - Get QC statistics for each sample
+## Step 6 - Get QC statistics for each sample
 This simply counts the number of sequences in each of the QCed files. Compiled stats*.txt file can be reviewed to see what steps removed the most (or fewest) total number of sequences. Depending on your research goals, it may be in your best interest to keep as much data as possible, i.e. relax the stringency during sequence qc.
 
 ```
-count_seqs.py -i raw_dir/Test01_L001_R1_001.fastq,Test01_merged.fastq,Test01_merged_QC.fasta,Test01_merged_QC_trim.fasta,Test01_merged_QC_trim_len.fasta,Test01_merged_QC_trim_len_nc.fasta > stats_Test01.txt
+count_seqs.py -i raw_dir/Test01_L001_R1_001.fastq,Test01_merged.fastq,Test01_merged_QC.fasta,Test01_merged_QC_trim.fasta,Test01_merged_QC_trim_len.fasta > stats_Test01.txt
 # Clean up directory
 mv Test01_merged.fastq excess_Test01
 mv Test01_merged_QC.fasta excess_Test01
@@ -98,23 +92,85 @@ mv Test01_merged_QC_trim_len.fasta excess_Test01
 ```
 
 Output text files show you the total number of sequences at each step. For example, for "Test01", we started with 800 sequences, initial merging remove almost 200 sequences. Another 100 sequences were removed during the QC step. We've kept 69% of the sequences.
+Now start an R environment to compile statistics of the QC run for each sample:
 
-## Step 8 (optional) - Repeat for all sequences & get stats
+## Step 7 - Repeat for all sequences and combine all QCed reads together
 
 To repeat, see automation pipeline information at [protocols.io](https://www.protocols.io/view/microbial-eukaryotic-18s-tag-sequence-processing-q-j9bcr2n) and using 'V4_tagseq_automate_QC_04282018.pl'
 
 ```
+# Make sure to uncomment lines for chosen chimera checking step and replace "$PWD" with correct path.
 perl V4_tagseq_automate_QC_04282018.pl > automate.sh
 bash automate.sh
 ```
 
-## Step 9 - Combine all reads together. 
-
 QIIME map file (during the split library step) introduced sample names (e.g. "Test01") into the fasta file header. So when we combine all of our fasta files together we can still track which sequences belong to which samples.
 
 ```
-cat Test*_trim_merged_Q30_len_nc.fasta >> allseqs_test.fasta
+cat excess_*/Test*_trim_merged_Q30_len.fasta >> allseqs_test.fasta
 ```
+
+## Step 8 - Chimera check and removal
+
+I recommend pooled chimera checking, where chimera are removed from the entire dataset, rather than for each individual sample. There are two options for removing chimeric reads from the dataset, de novo or reference based. Both options are listed below. We're using [vsearch](https://github.com/torognes/vsearch) here.
+```
+# de novo chimera checking
+vsearch --uchime_denovo allseqs_test.fasta --nonchimeras allseqs_test_denovoNC.fasta
+
+# reference-based chimera checking
+vsearch --uchime_ref allseqs_test.fasta --nonchimeras allseqs_test_refNC.fasta --db $PWD/[reference database] # insert path to reference database, e.g. PR2
+```
+
+## Step 9 - (optional) Get run statistics
+After run is repeated (9a), use the below R script to import all of the .txt files generated in step 6 so we can look at how many sequences were removed at each QC step.
+Since chimera checking (step 8) was done for the whole dataset, you'll have to add how many sequence were removed via chimera checking later.
+
+Start R environment
+'''
+# R
+library(reshape2)
+#
+# Select files with "stats" in the name and end with ".txt"
+stats_files <- intersect(list.files(pattern="stats"), list.files(pattern=".txt"))
+# Run loop to compile all stats for each sample
+for (file in stats_files){
+  if (!exists("qc_info")){
+    # Import w.o header. Ensure read separation is a space " "
+    imported<-read.delim(file, header=FALSE, sep=" ")
+    # Select columns and rows desired. Take note of order of QC steps:
+    tmp<-imported[c(1,4)]
+    qc_info<-tmp[1:5,]
+    # Obtain sample ID and generate new column with sample ID
+    split<- colsplit(qc_info$V4, "_", c("identity", "else"))
+    samplename<-split[1,1]
+    qc_info$SampleID<-samplename
+    # Add in QC steps, *NOTE* will need to change order depending on how count_seqs.py was done
+    qc_info$QC_step<-c("Primer removal", "Length trim", "Q score", "Merge", "Raw")
+    colnames(qc_info)[1:2]<-c("Sequences", "File name")
+    }
+  if (exists("qc_info")){
+    imported<-read.delim(file, header=FALSE, sep=" ")
+    # Select columns and rows desired. Take note of order of QC steps:
+    tmp<-imported[c(1,4)]
+    qc_tmp<-tmp[1:5,] #instead - call qc_tmp
+    # Obtain sample ID and generate new column with sample ID
+    split<- colsplit(qc_tmp$V4, "_", c("identity", "else"))
+    samplename<-split[1,1]
+    qc_tmp$SampleID<-samplename
+    # Add in QC steps, *NOTE* will need to change order depending on how count_seqs.py was done
+    qc_tmp$QC_step<-c("Primer removal", "Length trim", "Q score", "Merge", "Raw")
+    colnames(qc_tmp)[1:2]<-c("Sequences", "File name")
+    qc_info<-rbind(qc_info, qc_tmp) # Now add to growing df called "qc_info"
+    rm(qc_tmp) # Remove the tmp df created here
+    qc_info<-unique(qc_info)
+  }
+}
+head(qc_info)
+# Cast to show by sample change
+qc_stats<-dcast(qc_info[c(3:4,1)], SampleID~QC_step, value.var = "Sequences")
+# Write to .csv file
+write.csv(qc_stats, file="sequence_qc.csv")
+'''
 
 ## Step 10 - OTU clustering
 
@@ -135,7 +191,7 @@ This command takes in the combined fasta file from above and outputs a directory
 
 ```
 #OTU clustering with uclust, will make a new directory (pick_open)
-pick_open_reference_otus.py -i allseqs_test.fasta -o pick_open -m uclust -r $PWD/pr2_DB.fasta --suppress_step4 --suppress_taxonomy_assignment
+pick_open_reference_otus.py -i allseqs_test_refNC.fasta -o pick_open -m uclust -r $PWD/pr2_DB.fasta --suppress_step4 --suppress_taxonomy_assignment
 ```
 
 ## Step 10b - assign taxonomy using uclust
