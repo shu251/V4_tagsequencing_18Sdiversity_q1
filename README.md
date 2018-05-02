@@ -187,19 +187,26 @@ Below steps use the output from the QC steps 1-10. 'allseqs_test.fasta' is also 
 
 ## Step 10a - run clustering:
 
-This command takes in the combined fasta file from above and outputs a directory with all necessary files. Replace "$PWD/pr2_DB.fasta" with the location of your reference database. Make sure you have an associated taxonomy file with the database.
-
+This command takes in the combined fasta file from above and outputs a directory with all necessary files. Replace "$PWD/pr2_DB.fasta" with the location of your reference database. Make sure you have an associated taxonomy file with the database. [pick_open_reference_otus.pu](http://qiime.org/scripts/pick_open_reference_otus.html)
+There are several actions wrapped into this one command:
+1. Closed reference OTU clustering is performed against the specified reference database. This step essentially separates your input sequences into those that did cluster ('step1_otus/_clusters.uc, _otus.txt, step1_rep_set.fna') and those that did NOT cluster ('step1_otus/_failures.txt, failures.fasta')
+2. 'failures.fasta' is then randomly subsampled to create 'subsampled_failures.fna'. Percent subsample is specified based on '-s', default is 0.001 (0.1%).
+3. Next, these 'failed' sequences are clustered de novo. Each cluster is labeled as "new reference sequence". This step generates 'step2_otus/subsampled_seqs_clusters.uc, subsampled_seqs_otus.txt, step2_rep_set.fna'
+4. These newly generated de novo OTUs will now serve as the reference OTUs to perform closed reference OTU picking with the full 'failures.fasta' file (from step 1). 
+5. Now you have the option to take those reads that were not clustered into OTUs or hit the reference database and conduct additional de novo OTU clustering. *The command written below suppresses this step ('--suppress_step4'). At this point, especially for microbial eukaryotes, I feel we have tried to 'salvage' as many of the reads as possible to detect potentially novel or underrepresented taxa. The final de novo OTU clustering step is more likely to produce OTUs that have very low sequence counts and will have no taxonomic assignments - thus we prefere to skip this step. '--suppress_taxonomy_assignment' is also passed, as we prefer to perform this step separately (allows for additional troubleshooting and testing). *NOTE* suppressing step 4 and taxonomic assignment will produce an error.
+6. The output file 'final_otu_map_mc2.txt' is an OTU map comprised of OTUs that contained at least 2 sequences (global singletons removed!). Based on this OTU map, the 'rep_set.fna' file was generated.
 ```
 #OTU clustering with uclust, will make a new directory (pick_open)
 pick_open_reference_otus.py -i allseqs_test_refNC.fasta -o pick_open -m uclust -r $PWD/pr2_DB.fasta --suppress_step4 --suppress_taxonomy_assignment
 ```
 
 ## Step 10b - assign taxonomy using uclust
+This step takes the representative sequences from the pick open reference clustering (10a) and assigns taxonomy using the PR2 (or db of choice). Reads are assigned taxonomic identities using uclust (-m). Successful assignment requires the hit to have at least 90% similarity (--similarity 0.90) and uclust will consider up to 3 hits (--uclust_max_accepts 3). [assign_taxonomy.py](http://qiime.org/scripts/assign_taxonomy.html)
 Replace "$PWD/pr2_DB.fasta" and "$PWD/pr2_tax.fasta" with location of database and accompanying taxonomy file.
 ```
 cd pick_open
 # Assign taxonomy using PR2 database, creates a new directory (uclust_taxonomy)
-assign_taxonomy.py -i rep_set.fna -t $PWD/pr2_tax.fasta -r $PWD/pr2_DB.fasta -m uclust -o uclust_taxonomy
+assign_taxonomy.py -i rep_set.fna -t $PWD/pr2_tax.fasta -r $PWD/pr2_DB.fasta -m uclust --similarity 0.90 --uclust_max_accepts 3 -o uclust_taxonomy
 ```
 
 ## Step 10c - Generate OTU table
