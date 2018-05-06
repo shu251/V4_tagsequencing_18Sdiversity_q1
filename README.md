@@ -8,7 +8,7 @@ Below protocol describes approach used for 18S tag-sequencing, specifically from
 * Contents of this repo, especially scripts: create.map.pl & seqlength_cutoff.pl
 * [QIIME](http://qiime.org/install/install.html) -  v.1.9.1 or higher. Note as of Jan 2018 QIIME1 will not be supported. Future iterations of this protocol will use QIIME2.
 * fastqjoin - this should install with QIIME. Alternatively you can use [PEAR](https://sco.h-its.org/exelixis/web/software/pear/doc.html#installing) to merge PE sequences.
-* [cutadapt](http://cutadapt.readthedocs.io/en/stable/installation.html)
+* [cutadapt](http://cutadapt.readthedocs.io/en/stable/installation.html) v.1.15 or higher
 * [vsearch](https://github.com/torognes/vsearch) - v1.11.1
 * Reference database for downstream OTU clustering & taxonomy assignment. For 18S (microbial eukaryotic) work, I prefer [PR2](https://github.com/vaulot/pr2_database/wiki)
 * R - see optional steps below for using R to generate stats on QC steps.
@@ -57,17 +57,11 @@ mv excess_Test01/split_Test01/seqs.fna Test01_merged_QC.fasta
 ```
 
 ## Step 4 - Primer removal
-Cutadapt runs in two steps. Commands below are specific for using the [V4 Stoeck et al. 2010 primers](https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-294X.2009.04480.x).
-* First, check/remove forward primer, write an output temporay fasta file and a .txt file to report how many primers to removed. This .txt file also reports error rate. By default, cutadapt allows up to 10% mismatch. You can change with by using -e in the line (50% would be '-e 0.5').
-* Second, use the tmp file to check for reverse primers.
-
+Commands below are specific for using the [V4 Stoeck et al. 2010 primers](https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-294X.2009.04480.x).
+Searches for 5' primer, trims it and then searches for 3' primer. If a sequences does not have either primer, it is removed.
+Generates a report file that summarizes rate of primer mismatches and number of reads removed.
 ```
-# Screen and remove forward
-cutadapt -g CCAGCASCYGCGGTAATTCC Test01_merged_QC.fasta > tmpFOR.fasta 2> excess_Test01/primerreportFOR.txt
-
-# Screen and remove reverse
-cutadapt -a TYRATCAAGAACGAAAGT tmpFOR.fasta > Test01_merged_QC_trim.fasta 2> excess_Test01/primerreportREV.txt
-rm tmpFOR.fasta # remove tmp file
+cutadapt -a CCAGCASCYGCGGTAATTCC...ACTTTCGTTCTTGATYRA --discard-untrimmed Test01_merged_QC.fasta > Test01_merged_QC_trim.fasta 2> report.txt
 ```
 
 ## Step 5 - Sequence length QC

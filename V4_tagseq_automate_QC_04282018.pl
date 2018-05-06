@@ -24,11 +24,7 @@ print "split_libraries_fastq.py -i ",$i,"_merged.fastq -m map_dir/",$i,"_map.txt
 print "mv excess_",$i,"/split_",$i,"/seqs.fna ",$i,"_merged_QC.fasta\n";
 
 # Remove V4 primers
-print "cutadapt -g CCAGCASCYGCGGTAATTCC ",$i,"_merged_QC.fasta > tmpFOR",$i,".fasta 2> excess_",$i,"/primerreportFOR.txt\n";
-
-print "cutadapt -a TYRATCAAGAACGAAAGT tmpFOR",$i,".fasta > ",$i,"_merged_QC_trim.fasta 2> excess_",$i,"/primerreportREV.txt\n";
-
-print "rm tmpFOR",$i,".fasta\n";
+print "cutadapt -a CCAGCASCYGCGGTAATTCC...ACTTTCGTTCTTGATYRA --discard-untrimmed ",$i,"_merged_QC.fasta > ",$i,"_merged_QC_trim.fasta 2> excess_",$i,"/report.txt\n";
 
 # Length filter: seqlength_cutoff.pl [input.fasta] [min] [max] [output.fasta] 
 print "./seqlength_cutoff.pl ",$i,"_merged_QC_trim.fasta 150 500 ",$i,"_merged_QC_trim_len.fasta\n";
