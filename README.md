@@ -41,7 +41,7 @@ More information on map files: Map files in QIIME serve to de-multiplex reads (b
 Join the ~250 bp R1 and R2 to form an ~400 bp merged read. Below requires a 20 bp overlap.
 
 ```
-join_paired_ends.py -f raw_dir/Test01_L001_R1_001.fastq -r raw_dir/Test01_L001_R1_001.fastq -o excess_Test01 -j 20
+join_paired_ends.py -f raw_dir/Test01_L001_R1_001.fastq -r raw_dir/Test01_L001_R2_001.fastq -o excess_Test01 -j 20
 mv excess_Test01/fastqjoin.join.fastq Test01_merged.fastq
 ```
 
@@ -61,7 +61,11 @@ Commands below are specific for using the [V4 Stoeck et al. 2010 primers](https:
 Searches for 5' primer, trims it and then searches for 3' primer. If a sequences does not have either primer, it is removed.
 Generates a report file that summarizes rate of primer mismatches and number of reads removed.
 ```
-cutadapt -a CCAGCASCYGCGGTAATTCC...ACTTTCGTTCTTGATYRA --discard-untrimmed Test01_merged_QC.fasta > Test01_merged_QC_trim.fasta 2> report.txt
+# Remove forward primers, report in excess dir, generate a tmp file
+# I'm allowing 30% error
+cutadapt -g CCAGCASCYGCGGTAATTCC -e 0.30 --discard-untrimmed Test01_merged_QC.fasta > tmpFOR_Test01.fasta 2> excess_Test01/primerreportFOR_Test01.txt
+# remove reverse primers, continue report, generate primer-free fasta file
+cutadapt -a ACTTTCGTTCTTGATYRA -e 0.30 --discard-untrimmed tmpFOR_Test01.fasta > Test01_merged_QC_trim.fasta 2> excess_Test01/primerreportREV_Test01.txt
 ```
 
 ## Step 5 - Sequence length QC
